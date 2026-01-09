@@ -13,40 +13,45 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                // 1. Disable CSRF for APIs (Modern Lambda style)
-                .csrf(AbstractHttpConfigurer::disable)
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                return http
+                                // 1. Disable CSRF for APIs (Modern Lambda style)
+                                .csrf(AbstractHttpConfigurer::disable)
 
-                // 2. Handle CORS (Essential for frontend integration)
-                .cors(Customizer.withDefaults())
+                                // 2. Handle CORS (Essential for frontend integration)
+                                .cors(Customizer.withDefaults())
 
-                // 3. Set Session Policy to Stateless (Industry standard for APIs)
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // 3. Set Session Policy to Stateless (Industry standard for APIs)
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
-                // 4. Request Authorization
-                .authorizeHttpRequests(auth -> auth
-                        // Public Assets & Static Resources
-                        .requestMatchers("/", "/login", "/signup", "/css/**", "/js/**",
-                                "/images/**", "/webjars/**")
-                        .permitAll()
+                                // 4. Request Authorization
+                                .authorizeHttpRequests(auth -> auth
+                                                // Public Assets & Static Resources
+                                                .requestMatchers("/", "/login", "/signup",
+                                                                "/css/**", "/js/**", "/**/*.png",
+                                                                "/**/*.jpg", "/**/*.jpeg",
+                                                                "/**/*.gif", "/**/*.svg",
+                                                                "/**/*.ico", "/images/**",
+                                                                "/webjars/**")
+                                                .permitAll()
 
-                        // Public Pages
-                        .requestMatchers("/home", "/about", "/contact").permitAll()
+                                                // Public Pages
+                                                .requestMatchers("/home", "/about", "/contact")
+                                                .permitAll()
 
-                        // Auth & Public APIs
-                        .requestMatchers("/api/users/**").permitAll()
+                                                // Auth & Public APIs
+                                                .requestMatchers("/api/users/**").permitAll()
 
-                        // Secure all other endpoints
-                        .anyRequest().authenticated())
+                                                // Secure all other endpoints
+                                                .anyRequest().authenticated())
 
-                // 5. Disable default login behaviors for a pure API/Custom Auth
-                // approach
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
+                                // 5. Disable default login behaviors for a pure API/Custom Auth
+                                // approach
+                                .formLogin(AbstractHttpConfigurer::disable)
+                                .httpBasic(AbstractHttpConfigurer::disable)
 
-                .build();
-    }
+                                .build();
+        }
 }
