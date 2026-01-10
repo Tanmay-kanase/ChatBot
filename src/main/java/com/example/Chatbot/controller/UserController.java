@@ -3,6 +3,7 @@ package com.example.Chatbot.controller;
 import com.example.Chatbot.models.user;
 import com.example.Chatbot.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +17,16 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public Map<String, Object> signup(@RequestBody user user) {
-        return userService.signup(user);
+    public ResponseEntity<?> signup(@RequestBody user user) {
+        Map<String, Object> result = userService.signup(user);
+
+        // If the service returned an error key, send a 400 Bad Request
+        if (result.containsKey("error")) {
+            return ResponseEntity.badRequest().body(result);
+        }
+
+        // Otherwise, send 200 OK with the user and token
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/login")
