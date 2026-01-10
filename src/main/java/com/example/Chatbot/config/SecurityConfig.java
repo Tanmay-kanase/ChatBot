@@ -29,7 +29,7 @@ public class SecurityConfig {
                                 // 4. Request Authorization
                                 .authorizeHttpRequests(auth -> auth
                                                 // Public Assets & Static Resources
-                                                .requestMatchers("/", "/login", "/signup",
+                                                .requestMatchers("/", "/login", "/signup", "/chat",
                                                                 "/css/**", "/js/**", "/**/*.png",
                                                                 "/**/*.jpg", "/**/*.jpeg",
                                                                 "/**/*.gif", "/**/*.svg",
