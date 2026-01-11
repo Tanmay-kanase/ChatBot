@@ -20,22 +20,21 @@ public class ConversationService {
     private UserRepository userRepository;
 
     // Create new conversation for a user
-    public String createConversation(Long userId) {
-        try {
-            Optional<user> userOpt = userRepository.findById(userId);
+    public String createConversation(Long userId, String name) {
+        // 1. Find the user (assuming you have a userRepository)
+        user existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (userOpt.isEmpty()) {
-                return "User not found";
-            }
+        // 2. Build the conversation with the provided name
+        conversation newConv = conversation.builder().user(existingUser).conversationName(name) // This
+                                                                                                // fixes
+                                                                                                // the
+                                                                                                // "not-null"
+                                                                                                // error
+                .build();
 
-            conversation conv = conversation.builder().user(userOpt.get()).build();
-
-            conversationRepository.save(conv);
-            return "Conversation created successfully";
-
-        } catch (Exception e) {
-            return "Error creating conversation: " + e.getMessage();
-        }
+        conversationRepository.save(newConv);
+        return "Conversation '" + name + "' created successfully";
     }
 
     // Get all conversations of a user

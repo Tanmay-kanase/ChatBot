@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "conversations")
@@ -21,16 +22,16 @@ public class conversation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private user user;
+
+    @Column(nullable = false, length = 100)
+    private String conversationName;
 
     @Column(updatable = false)
     private LocalDateTime startedAt;
 
-    @OneToMany(
-            mappedBy = "conversation",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<messages> messages;
 
     @PrePersist
@@ -38,4 +39,3 @@ public class conversation {
         this.startedAt = LocalDateTime.now();
     }
 }
-

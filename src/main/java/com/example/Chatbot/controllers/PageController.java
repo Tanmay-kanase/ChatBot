@@ -1,4 +1,4 @@
-package com.example.Chatbot.controller;
+package com.example.Chatbot.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

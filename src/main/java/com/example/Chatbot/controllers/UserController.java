@@ -1,4 +1,4 @@
-package com.example.Chatbot.controller;
+package com.example.Chatbot.controllers;
 
 import com.example.Chatbot.models.user;
 import com.example.Chatbot.services.UserService;

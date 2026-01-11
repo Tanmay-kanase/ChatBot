@@ -1,4 +1,4 @@
-package com.example.Chatbot.controller;
+package com.example.Chatbot.controllers;
 
 import com.example.Chatbot.models.conversation;
 import com.example.Chatbot.services.ConversationService;
@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -18,8 +19,15 @@ public class ConversationController {
 
     // Create conversation
     @PostMapping("/create/{userId}")
-    public ResponseEntity<?> createConversation(@PathVariable Long userId) {
-        String result = conversationService.createConversation(userId);
+    public ResponseEntity<?> createConversation(@PathVariable Long userId,
+            @RequestBody Map<String, String> payload) {
+
+        String name = payload.get("conversationName");
+        if (name == null || name.isEmpty()) {
+            return ResponseEntity.badRequest().body("Conversation name is required");
+        }
+
+        String result = conversationService.createConversation(userId, name);
         return ResponseEntity.ok(result);
     }
 
