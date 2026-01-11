@@ -4,65 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sumago AI | Onyx</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" th:href="@{/css/chat.css}" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-        background-color: #ffffff;
-        color: #000000;
-      }
-
-      /* Smooth Sidebar Transition */
-      #sidebar {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 260px;
-      }
-
-      #sidebar.closed {
-        width: 0;
-        transform: translateX(-260px);
-        opacity: 0;
-      }
-
-      /* Black Theme Elements */
-      .bg-onyx {
-        background-color: #000000;
-      }
-      .border-base {
-        border-color: #e5e7eb;
-      }
-      .user-bubble {
-        background-color: #f4f4f4;
-        border-radius: 1.25rem;
-      }
-
-      /* Hide scrollbar but keep functionality */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-
-      /* Input Shadow */
-      .input-container {
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e7eb;
-      }
-    </style>
   </head>
+
   <body class="flex h-screen overflow-hidden">
+    <!-- Side bar  -->
     <aside
       id="sidebar"
       class="h-full bg-[#f9f9f9] border-r border-base flex flex-col z-40"
     >
       <div class="p-4 flex items-center justify-between">
         <button
+          id="newChatBtn"
           class="flex-1 flex items-center gap-3 bg-black text-white rounded-lg p-2.5 hover:bg-gray-800 transition shadow-sm"
         >
           <svg
@@ -81,23 +41,12 @@
           <span class="text-sm font-medium">New Chat</span>
         </button>
       </div>
-
-      <div class="flex-1 overflow-y-auto px-3 space-y-1 no-scrollbar">
-        <p
-          class="text-[10px] font-bold text-gray-400 px-3 mt-6 mb-2 uppercase tracking-widest"
-        >
-          Recent Chats
-        </p>
-        <div
-          class="p-3 text-sm rounded-lg hover:bg-gray-200 cursor-pointer truncate font-medium"
-        >
-          Authentication Module
-        </div>
-        <div
-          class="p-3 text-sm rounded-lg hover:bg-gray-200 cursor-pointer truncate font-medium"
-        >
-          Database Schema Design
-        </div>
+      <!-- Conversation List  -->
+      <div
+        id="conversation-list"
+        class="flex-1 overflow-y-auto px-3 space-y-1 no-scrollbar"
+      >
+        loading...
       </div>
 
       <div class="p-4 border-t border-base">
@@ -109,7 +58,9 @@
           >
             JD
           </div>
-          <span class="text-sm font-bold truncate">John Doe</span>
+          <span class="text-sm font-bold truncate" id="username-label"
+            >username</span
+          >
         </div>
       </div>
     </aside>
@@ -222,77 +173,6 @@
         </div>
       </div>
     </main>
-
-    <script>
-      const sidebar = document.getElementById("sidebar");
-      const chatContent = document.getElementById("chat-content");
-      const chatInput = document.getElementById("chat-input");
-      const sendBtn = document.getElementById("send-btn");
-      const scrollWindow = document.getElementById("scroll-window");
-
-      // 1. Immediately check for the token
-      const token = localStorage.getItem("token");
-
-      // 2. If no token, redirect to login BEFORE the rest of the page loads
-      if (!token) {
-        window.location.href = "/login";
-      }
-      // Sidebar Toggle (No blur, just shift)
-      function toggleSidebar() {
-        sidebar.classList.toggle("closed");
-      }
-
-      // Auto-resize for textarea
-      function autoGrow(element) {
-        element.style.height = "5px";
-        element.style.height = element.scrollHeight + "px";
-      }
-
-      // Message Logic
-      function appendMsg(role, text) {
-        const container = document.createElement("div");
-        if (role === "user") {
-          container.className =
-            "flex justify-end animate-in fade-in slide-in-from-right-2 duration-300";
-          container.innerHTML = `<div class="user-bubble px-5 py-3 text-sm text-gray-800 shadow-sm">${text}</div>`;
-        } else {
-          container.className =
-            "flex gap-6 items-start animate-in fade-in duration-500";
-          container.innerHTML = `
-                    <div class="w-8 h-8 bg-black rounded-sm flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">S</div>
-                    <div class="flex-1 text-sm text-gray-800 leading-relaxed">${text}</div>`;
-        }
-        chatContent.appendChild(container);
-        scrollWindow.scrollTo({
-          top: scrollWindow.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-
-      sendBtn.addEventListener("click", () => {
-        const msg = chatInput.value.trim();
-        if (msg) {
-          appendMsg("user", msg);
-          chatInput.value = "";
-          chatInput.style.height = "auto";
-
-          // Simulated AI thinking
-          setTimeout(() => {
-            appendMsg(
-              "ai",
-              "Acknowledged. Processing your request in the Sumago Black environment..."
-            );
-          }, 700);
-        }
-      });
-
-      // Enter to send
-      chatInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendBtn.click();
-        }
-      });
-    </script>
+    <script th:src="@{/js/chat.js}"></script>
   </body>
 </html>
