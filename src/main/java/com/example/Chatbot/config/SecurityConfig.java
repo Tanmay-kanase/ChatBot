@@ -1,5 +1,6 @@
 package com.example.Chatbot.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -8,10 +9,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+        @Autowired
+        private JwtAuthFilter jwtAuthFilter;
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -29,12 +34,12 @@ public class SecurityConfig {
                                 // 4. Request Authorization
                                 .authorizeHttpRequests(auth -> auth
                                                 // Public Assets & Static Resources
-                                                .requestMatchers("/", "/login", "/signup", "/chat",
-                                                                "/css/**", "/js/**", "/**/*.png",
-                                                                "/**/*.jpg", "/**/*.jpeg",
-                                                                "/**/*.gif", "/**/*.svg",
-                                                                "/**/*.ico", "/images/**",
-                                                                "/webjars/**")
+                                                .requestMatchers("/", "/login", "/signup",
+                                                                "/chat/**", "/css/**", "/js/**",
+                                                                "/**/*.png", "/**/*.jpg",
+                                                                "/**/*.jpeg", "/**/*.gif",
+                                                                "/**/*.svg", "/**/*.ico",
+                                                                "/images/**", "/webjars/**")
                                                 .permitAll()
 
                                                 // Public Pages
@@ -43,9 +48,12 @@ public class SecurityConfig {
 
                                                 // Auth & Public APIs
                                                 .requestMatchers("/api/users/**").permitAll()
+                                                .requestMatchers("/chat/**").authenticated()
 
                                                 // Secure all other endpoints
                                                 .anyRequest().authenticated())
+                                .addFilterBefore(jwtAuthFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
 
                                 // 5. Disable default login behaviors for a pure API/Custom Auth
                                 // approach

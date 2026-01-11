@@ -23,4 +23,9 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256).compact();
     }
+
+    public Key getKey() {
+        return key;
+    }
+
 }
