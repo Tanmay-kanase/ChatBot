@@ -49,6 +49,7 @@ public class SecurityConfig {
                                                 // Auth & Public APIs
                                                 .requestMatchers("/api/users/**").permitAll()
                                                 .requestMatchers("/chat/**").authenticated()
+                                                .requestMatchers("/api/conversations/**").permitAll()
 
                                                 // Secure all other endpoints
                                                 .anyRequest().authenticated())

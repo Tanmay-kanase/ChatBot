@@ -110,80 +110,153 @@ chatInput.addEventListener("keydown", (e) => {
   }
 });
 
+async function askOllamaWithTitle(userMsg) {
+  const res = await fetch("http://localhost:11434/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "gemma3:1b",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are an AI that:
+1. Answers the user.
+2. Generates a short conversation title (2–4 words).
+
+Return ONLY valid JSON.
+No markdown. No explanation.
+
+Format:
+{"title":"...","reply":"..."}
+          `,
+        },
+        { role: "user", content: userMsg },
+      ],
+      stream: false,
+    }),
+  });
+
+  const data = await res.json();
+
+  const raw = data.message.content;
+  console.log("RAW OLLAMA RESPONSE:", raw);
+
+  // 🧠 Extract JSON safely
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+
+  if (start === -1 || end === -1) {
+    throw new Error("No JSON found in Ollama response");
+  }
+
+  const jsonString = raw.substring(start, end + 1);
+
+  return JSON.parse(jsonString);
+}
+
+async function createConversation(title) {
+  const res = await fetch(
+    `http://localhost:8888/api/conversations/create/${user.userId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        conversationName: title,
+      }),
+    }
+  );
+
+  return await res.json(); // { conversationId, ... }
+}
+
+async function askOllamaSimpleReply(userMsg) {
+  const res = await fetch("http://localhost:11434/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "gemma3:1b",
+      messages: [{ role: "user", content: userMsg }],
+      stream: false,
+    }),
+  });
+  const data = await res.json();
+  return data.message.content;
+}
+
+// Dedicated function to save to DB to avoid repeating code
+async function saveMessageToDb(convoId, sender, text) {
+  return fetch("http://localhost:8888/api/messages/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      conversationId: convoId,
+      sender: sender,
+      messageText: text,
+    }),
+  });
+}
+
 async function sendMessage() {
   const msg = chatInput.value.trim();
-  if (!msg || !conversationId) return;
+  if (!msg) return;
 
-  // 1️⃣ Show user message in UI
   appendMsg("user", msg);
   chatInput.value = "";
-
-  // 2️⃣ Show thinking message
-  const thinkingDiv = document.createElement("div");
-  thinkingDiv.className = "msg flex gap-3";
-  thinkingDiv.innerHTML = `
-    <div class="w-8 h-8 bg-black text-white flex items-center justify-center text-xs rounded-md">S</div>
-    <div class="bg-gray-100 px-4 py-2 rounded-2xl max-w-xs">
-      Thinking...
-    </div>`;
-  chatContent.appendChild(thinkingDiv);
-  scrollWindow.scrollTop = scrollWindow.scrollHeight;
+  appendMsg("ai", "Thinking...");
 
   try {
-    // Save USER message in DB
-    await fetch("http://localhost:8888/api/messages/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        conversationId,
-        sender: "user",
-        messageText: msg,
-      }),
-    });
+    let currentId = getConversationId();
+    let aiReply = "";
+    let convoTitle = "";
 
-    // Send message to OLLAMA
-    // const res = await fetch("http://localhost:11434/api/chat", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     model: "gemma3:1b",
-    //     messages: [{ role: "user", content: msg }],
-    //     stream: false,
-    //   }),
-    // });
+    // 1. Get AI Response first (while we still have the context)
+    if (!currentId) {
+      const aiData = await askOllamaWithTitle(msg);
+      aiReply = aiData.reply;
+      convoTitle = aiData.title;
 
-    // const data = await res.json();
-    const aiReply = "data.message.content";
+      // 2. Create the conversation in DB
+      const convo = await createConversation(convoTitle);
+      currentId = convo.conversationId;
 
-    //  Remove "Thinking..."
-    thinkingDiv.remove();
+      // 3. IMPORTANT: Save BOTH messages before redirecting
+      // We use await to ensure the DB has the data before the page reloads
+      await saveMessageToDb(currentId, "user", msg);
+      await saveMessageToDb(currentId, "ai", aiReply);
 
-    // Show AI reply in UI
-    appendMsg("ai", aiReply);
+      // 4. Now redirect (the messages are safe in the DB)
+      window.location.href = `/chat?conversationId=${currentId}`;
+    } else {
+      // Logic for existing conversations
+      aiReply = await askOllamaSimpleReply(msg);
+      await saveMessageToDb(currentId, "user", msg);
+      await saveMessageToDb(currentId, "ai", aiReply);
 
-    // 7️⃣ Save AI message in DB
-    await fetch("http://localhost:8888/api/messages/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        conversationId,
-        sender: "ai",
-        messageText: aiReply,
-      }),
-    });
-  } catch (err) {
-    console.error("Chat error:", err);
-    thinkingDiv.remove();
-    appendMsg("ai", "⚠️ Something went wrong. Try again.");
+      // No redirect needed, just refresh the view
+      loadConversations();
+      loadMessages();
+    }
+  } catch (e) {
+    console.error(e);
+    appendMsg("ai", "⚠️ Failed to process message.");
   }
 }
 
 // ---------- INIT ----------
 loadConversations();
 loadMessages();
+
+// At the bottom of your file
+window.onload = () => {
+  loadConversations();
+  if (getConversationId()) {
+    loadMessages();
+  }
+};
