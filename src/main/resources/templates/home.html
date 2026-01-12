@@ -1,11 +1,142 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Sumago AI | Beyond Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link rel="stylesheet" th:href="@{/css/chat.css}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    Home page is working
+  <body class="grid-bg">
+    <nav
+      class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100"
+    >
+      <div
+        class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"
+      >
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-black rounded-sm"></div>
+          <span class="font-black text-2xl tracking-tighter">SUMAGO</span>
+        </div>
+        <div
+          class="hidden md:flex gap-10 text-xs font-bold uppercase tracking-widest"
+        >
+          <a href="#features" class="hover:text-gray-500 transition"
+            >Features</a
+          >
+          <a href="#about" class="hover:text-gray-500 transition"
+            >Integration</a
+          >
+        </div>
+        <div class="flex items-center gap-4">
+          <a
+            th:href="@{/login}"
+            class="text-xs font-bold uppercase tracking-widest hover:underline"
+            >Login</a
+          >
+          <a
+            th:href="@{/signup}"
+            class="btn-black px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest shadow-xl"
+            >Join Now</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <section class="pt-40 pb-20 px-6">
+      <div class="max-w-7xl mx-auto text-center" data-aos="fade-up">
+        <h1
+          class="text-7xl md:text-9xl font-black tracking-tighter leading-none mb-8"
+        >
+          GENERATE <br />
+          <span class="outline-text">THE FUTURE.</span>
+        </h1>
+        <p
+          class="max-w-2xl mx-auto text-gray-500 text-lg md:text-xl font-medium mb-12"
+        >
+          The enterprise-grade AI interface for Spring Boot developers. Simple,
+          fast, and elegantly monochrome.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-6">
+          <a
+            th:href="@{/signup}"
+            class="btn-black px-10 py-5 rounded-full text-sm font-bold uppercase tracking-widest shadow-2xl"
+          >
+            Get Started for Free
+          </a>
+          <a
+            href="#features"
+            class="border border-black px-10 py-5 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-black hover:text-white transition"
+          >
+            Explore Features
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="py-32 bg-black text-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-3 gap-16">
+          <div data-aos="fade-up" data-aos-delay="100">
+            <h3 class="text-4xl font-black mb-6 italic">01.</h3>
+            <h4 class="text-xl font-bold mb-4">Pure Onyx UI</h4>
+            <p class="text-gray-400 leading-relaxed">
+              A distraction-free interface designed for developers who
+              appreciate minimalism and speed.
+            </p>
+          </div>
+          <div data-aos="fade-up" data-aos-delay="200">
+            <h3 class="text-4xl font-black mb-6 italic">02.</h3>
+            <h4 class="text-xl font-bold mb-4">Spring Optimized</h4>
+            <p class="text-gray-400 leading-relaxed">
+              Native integration with Spring Boot 3.x, ensuring your chatbot
+              service stays robust and scalable.
+            </p>
+          </div>
+          <div data-aos="fade-up" data-aos-delay="300">
+            <h3 class="text-4xl font-black mb-6 italic">03.</h3>
+            <h4 class="text-xl font-bold mb-4">Secure Logic</h4>
+            <p class="text-gray-400 leading-relaxed">
+              Enterprise-level security protocols out of the box. Your data,
+              your rules.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-32 text-center">
+      <div class="max-w-4xl mx-auto px-6" data-aos="zoom-in">
+        <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-10">
+          READY TO BUILD?
+        </h2>
+        <a
+          th:href="@{/chat}"
+          class="btn-black px-12 py-6 rounded-full text-lg font-bold uppercase tracking-widest inline-block"
+        >
+          Open Sumago AI
+        </a>
+      </div>
+    </section>
+
+    <footer class="py-12 border-t border-gray-100 text-center">
+      <div class="flex justify-center items-center gap-2 mb-4">
+        <div class="w-6 h-6 bg-black rounded-sm"></div>
+        <span class="font-black text-lg tracking-tighter">SUMAGO AI</span>
+      </div>
+      <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em]">
+        © 2026 Sumago Technologies. Built on Spring Boot.
+      </p>
+    </footer>
+
+    <script>
+      AOS.init({ duration: 1000, once: true });
+    </script>
   </body>
 </html>
