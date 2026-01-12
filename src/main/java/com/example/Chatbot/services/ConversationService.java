@@ -20,21 +20,20 @@ public class ConversationService {
     private UserRepository userRepository;
 
     // Create new conversation for a user
-    public String createConversation(Long userId, String name) {
-        // 1. Find the user (assuming you have a userRepository)
+    public conversation createConversation(Long userId, String name) {
+
+        // 1. Find the user
         user existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Build the conversation with the provided name
-        conversation newConv = conversation.builder().user(existingUser).conversationName(name) // This
-                                                                                                // fixes
-                                                                                                // the
-                                                                                                // "not-null"
-                                                                                                // error
+        // 2. Build conversation
+        conversation newConv = conversation.builder()
+                .user(existingUser)
+                .conversationName(name)
                 .build();
 
-        conversationRepository.save(newConv);
-        return "Conversation '" + name + "' created successfully";
+        // 3. Save and return
+        return conversationRepository.save(newConv);
     }
 
     // Get all conversations of a user
@@ -46,7 +45,7 @@ public class ConversationService {
                 return List.of();
             }
 
-            return conversationRepository.findByUser(userOpt.get());
+            return conversationRepository.findByUserOrderByCreatedAtDesc(userOpt.get());
 
         } catch (Exception e) {
             return List.of();

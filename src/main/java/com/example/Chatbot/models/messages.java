@@ -38,4 +38,3 @@ public class messages {
         this.createdAt = LocalDateTime.now();
     }
 }
-

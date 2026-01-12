@@ -29,13 +29,13 @@ public class conversation {
     private String conversationName;
 
     @Column(updatable = false)
-    private LocalDateTime startedAt;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<messages> messages;
 
     @PrePersist
     protected void onCreate() {
-        this.startedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 }
