@@ -1,10 +1,12 @@
-package com.example.Chatbot.controller;
+package com.example.Chatbot.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-// All the html files are load from the src/resources/templates you just have to mention the controller 
-// @GetMapping("/<route_name>") public String <PageName>() { return <html file name (not include extension)>}
+// All the html files are load from the src/resources/templates you just have to mention the
+// controller
+// @GetMapping("/<route_name>") public String <PageName>() { return <html file name (not include
+// extension)>}
 @Controller
 public class PageController {
 
@@ -16,6 +18,11 @@ public class PageController {
     @GetMapping("/login")
     public String loginPage() {
         return "login";
+    }
+
+    @GetMapping("/chat")
+    public String chatPage() {
+        return "chat";
     }
 
     @GetMapping("/signup")
