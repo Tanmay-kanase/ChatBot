@@ -27,8 +27,8 @@ public class ConversationController {
             return ResponseEntity.badRequest().body("Conversation name is required");
         }
 
-        String result = conversationService.createConversation(userId, name);
-        return ResponseEntity.ok(result);
+        conversation savedConv = conversationService.createConversation(userId, name);
+        return ResponseEntity.status(201).body(savedConv);
     }
 
     // Get all conversations of a user
