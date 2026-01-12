@@ -1,11 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    Home page is working
-  </body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatBot Home</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="login-container" style="max-width: 500px; text-align: center;">
+  <h2>Welcome to AI ChatBot</h2>
+  <p style="margin-bottom: 20px; color: #666;">Experience seamless AI conversations.</p>
+
+  <a th:href="@{/login}" style="display: block; text-decoration: none;">
+    <button style="width: 100%;">Get Started</button>
+  </a>
+
+  <p class="note">New here? <a th:href="@{/signup}">Create an account</a></p>
+</div>
+</body>
 </html>
