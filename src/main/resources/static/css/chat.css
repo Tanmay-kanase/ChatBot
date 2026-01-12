@@ -1,0 +1,44 @@
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Smooth Sidebar Transition */
+#sidebar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 260px;
+}
+
+#sidebar.closed {
+  width: 0;
+  transform: translateX(-260px);
+  opacity: 0;
+}
+
+/* Black Theme Elements */
+.bg-onyx {
+  background-color: #000000;
+}
+.border-base {
+  border-color: #e5e7eb;
+}
+.user-bubble {
+  background-color: #f4f4f4;
+  border-radius: 1.25rem;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Input Shadow */
+.input-container {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
