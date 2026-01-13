@@ -15,7 +15,127 @@ document.getElementById("logout-btn").onclick = () => {
   window.location.href = "/";
 };
 
+// 1. Add this Model Mapping at the top of your file
+const modelMapping = {
+  coding: "deepseek-coder", // Ensure these match your 'ollama list' names
+  math: "deepseek-r1:8b",
+  research: "catsarethebest/llama3.2-4oClaude", // or your local equivalent
+  translation: "qwen",
+  offline: "llama3",
+  default: "gemma3:1b"
+};
 
+// 2. Add this Classifier Helper function
+function getModelFromPrompt(prompt) {
+  const text = prompt.toLowerCase();
+
+  // Logic/Keyword based routing
+  if (text.match(/code|program|java|python|javascript|rust|debug|api|function/)) return modelMapping.coding;
+  if (text.match(/math|calculate|logic|solve|equation|integral|theorem/)) return modelMapping.math;
+  if (text.match(/research|paper|study|analyze|summary|citation|article/)) return modelMapping.research;
+  if (text.match(/translate|language|english|hindi|spanish|french|translate/)) return modelMapping.translation;
+  if (text.match(/offline|local|private/)) return modelMapping.offline;
+
+  return modelMapping.default;
+}
+
+// ... (existing variable declarations)
+
+// 3. Update askOllamaWithTitle to accept and use a dynamic model
+async function askOllamaWithTitle(userMsg, modelName = modelMapping.default) {
+  const res = await fetch("http://localhost:11434/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: modelName, // Dynamic model selection
+      messages: [
+        {
+          role: "system",
+          content: "You are an AI that: 1. Answers the user. 2. Generates a short conversation title (2–4 words). Return ONLY valid JSON: {\"title\":\"...\",\"reply\":\"...\"}"
+        },
+        { role: "user", content: userMsg },
+      ],
+      stream: false,
+    }),
+  });
+  const data = await res.json();
+  const raw = data.message.content;
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  return JSON.parse(raw.substring(start, end + 1));
+}
+
+// 4. Update askOllamaSimpleReply to use a dynamic model
+async function askOllamaSimpleReply(userMsg, modelName = modelMapping.default) {
+  const res = await fetch("http://localhost:11434/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: modelName, // Dynamic model selection
+      messages: [{ role: "user", content: userMsg }],
+      stream: false,
+    }),
+  });
+  const data = await res.json();
+  return data.message.content;
+}
+
+// 5. Update the Unified Send Logic to detect the category
+async function sendMessage() {
+  const userPrompt = chatInput.value.trim();
+  if (!userPrompt && !attachedFileContent) return;
+
+  // Determine the model based on user input
+  const selectedModel = getModelFromPrompt(userPrompt || attachedFileName);
+
+  const tempFileName = attachedFileName;
+  const tempFileContent = attachedFileContent;
+
+  if (tempFileName) appendFileChipUI(tempFileName);
+  if (userPrompt) appendMsg("user", userPrompt);
+
+  chatInput.value = "";
+  removeAttachedFile();
+
+  // Visual feedback of which model is working
+  appendMsg("ai", `Thinking using ${selectedModel}...`);
+
+  let fullPrompt = userPrompt;
+  if (tempFileContent) {
+    fullPrompt = `[Attached File: ${tempFileName}]\nContent:\n${tempFileContent}\n\nUser Instruction: ${userPrompt || "Please analyze this file."}`;
+  }
+
+  try {
+    let currentId = getConversationId();
+    let aiReply = "";
+
+    if (!currentId) {
+      // Pass the detected model name here
+      const aiData = await askOllamaWithTitle(fullPrompt, selectedModel);
+      aiReply = aiData.reply;
+      const convo = await createConversation(aiData.title);
+      currentId = convo.conversationId;
+
+      const dbUserText = tempFileName ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}` : userPrompt;
+      await saveMessageToDb(currentId, "user", dbUserText);
+      await saveMessageToDb(currentId, "ai", aiReply);
+      window.location.href = `/chat?conversationId=${currentId}`;
+    } else {
+      // Pass the detected model name here
+      aiReply = await askOllamaSimpleReply(fullPrompt, selectedModel);
+      const dbUserText = tempFileName ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}` : userPrompt;
+      await saveMessageToDb(currentId, "user", dbUserText);
+      await saveMessageToDb(currentId, "ai", aiReply);
+      loadConversations();
+      loadMessages();
+    }
+  } catch (e) {
+    console.error(e);
+    appendMsg("ai", `⚠️ Failed to process with ${selectedModel}.`);
+  }
+}
+
+// ... (rest of your existing loadConversations, loadMessages, and event listeners)
 
 // Global variables for staged file upload
 let attachedFileContent = "";
@@ -195,19 +315,19 @@ async function askOllamaWithTitle(userMsg) {
   return JSON.parse(raw.substring(start, end + 1));
 }
 
-async function askOllamaSimpleReply(userMsg) {
-  const res = await fetch("http://localhost:11434/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "gemma3:1b",
-      messages: [{ role: "user", content: userMsg }],
-      stream: false,
-    }),
-  });
-  const data = await res.json();
-  return data.message.content;
-}
+//async function askOllamaSimpleReply(userMsg) {
+//  const res = await fetch("http://localhost:11434/api/chat", {
+//    method: "POST",
+//    headers: { "Content-Type": "application/json" },
+//    body: JSON.stringify({
+//      model: "gemma3:1b",
+//      messages: [{ role: "user", content: userMsg }],
+//      stream: false,
+//    }),
+//  });
+//  const data = await res.json();
+//  return data.message.content;
+//}
 
 async function saveMessageToDb(convoId, sender, text) {
   return fetch("http://localhost:8888/api/messages/send", {
@@ -237,54 +357,54 @@ async function createConversation(title) {
 }
 
 // ---------- Unified Send Logic ----------
-async function sendMessage() {
-  const userPrompt = chatInput.value.trim();
-  if (!userPrompt && !attachedFileContent) return;
-
-  // UI state management
-  const tempFileName = attachedFileName;
-  const tempFileContent = attachedFileContent;
-
-  if (tempFileName) appendFileChipUI(tempFileName);
-  if (userPrompt) appendMsg("user", userPrompt);
-
-  chatInput.value = "";
-  removeAttachedFile();
-  appendMsg("ai", "Thinking...");
-
-  // Merge content for Ollama
-  let fullPrompt = userPrompt;
-  if (tempFileContent) {
-    fullPrompt = `[Attached File: ${tempFileName}]\nContent:\n${tempFileContent}\n\nUser Instruction: ${userPrompt || "Please analyze this file."}`;
-  }
-
-  try {
-    let currentId = getConversationId();
-    let aiReply = "";
-
-    if (!currentId) {
-      const aiData = await askOllamaWithTitle(fullPrompt);
-      aiReply = aiData.reply;
-      const convo = await createConversation(aiData.title);
-      currentId = convo.conversationId;
-
-      const dbUserText = tempFileName ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}` : userPrompt;
-      await saveMessageToDb(currentId, "user", dbUserText);
-      await saveMessageToDb(currentId, "ai", aiReply);
-      window.location.href = `/chat?conversationId=${currentId}`;
-    } else {
-      aiReply = await askOllamaSimpleReply(fullPrompt);
-      const dbUserText = tempFileName ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}` : userPrompt;
-      await saveMessageToDb(currentId, "user", dbUserText);
-      await saveMessageToDb(currentId, "ai", aiReply);
-      loadConversations();
-      loadMessages();
-    }
-  } catch (e) {
-    console.error(e);
-    appendMsg("ai", "⚠️ Failed to process message.");
-  }
-}
+//async function sendMessage() {
+//  const userPrompt = chatInput.value.trim();
+//  if (!userPrompt && !attachedFileContent) return;
+//
+//  // UI state management
+//  const tempFileName = attachedFileName;
+//  const tempFileContent = attachedFileContent;
+//
+//  if (tempFileName) appendFileChipUI(tempFileName);
+//  if (userPrompt) appendMsg("user", userPrompt);
+//
+//  chatInput.value = "";
+//  removeAttachedFile();
+//  appendMsg("ai", "Thinking...");
+//
+//  // Merge content for Ollama
+//  let fullPrompt = userPrompt;
+//  if (tempFileContent) {
+//    fullPrompt = `[Attached File: ${tempFileName}]\nContent:\n${tempFileContent}\n\nUser Instruction: ${userPrompt || "Please analyze this file."}`;
+//  }
+//
+//  try {
+//    let currentId = getConversationId();
+//    let aiReply = "";
+//
+//    if (!currentId) {
+//      const aiData = await askOllamaWithTitle(fullPrompt);
+//      aiReply = aiData.reply;
+//      const convo = await createConversation(aiData.title);
+//      currentId = convo.conversationId;
+//
+//      const dbUserText = tempFileName ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}` : userPrompt;
+//      await saveMessageToDb(currentId, "user", dbUserText);
+//      await saveMessageToDb(currentId, "ai", aiReply);
+//      window.location.href = `/chat?conversationId=${currentId}`;
+//    } else {
+//      aiReply = await askOllamaSimpleReply(fullPrompt);
+//      const dbUserText = tempFileName ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}` : userPrompt;
+//      await saveMessageToDb(currentId, "user", dbUserText);
+//      await saveMessageToDb(currentId, "ai", aiReply);
+//      loadConversations();
+//      loadMessages();
+//    }
+//  } catch (e) {
+//    console.error(e);
+//    appendMsg("ai", "⚠️ Failed to process message.");
+//  }
+//}
 
 // ---------- Initial Load ----------
 async function loadConversations() {
