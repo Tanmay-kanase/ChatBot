@@ -32,7 +32,7 @@ public class PageController {
         return "signup";
     }
 
-    @GetMapping("/home")
+    @GetMapping("/")
     public String homePage() {
         return "home";
     }
