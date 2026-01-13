@@ -15,15 +15,178 @@ document.getElementById("logout-btn").onclick = () => {
   window.location.href = "/";
 };
 
-const MODEL_CONFIG = {
-  Coding: "deepseek-v3",
-  "Math/Logic": "deepseek-r1",
-  "Research/Papers": "claude-3-5-sonnet",
-  Translation: "gemini-2.0-flash",
-  "Web/Realtime": "gpt-5.2",
-  Offline: "llama-3.3",
-  Conversation: "gemma3:1b", // Fallback/Default
+// 1. Add this Model Mapping at the top of your file
+const modelMapping = {
+  coding: "deepseek-coder", // Ensure these match your 'ollama list' names
+  math: "deepseek-r1:8b",
+  research: "catsarethebest/llama3.2-4oClaude", // or your local equivalent
+  translation: "qwen",
+  offline: "llama3",
+  default: "gemma3:1b",
 };
+
+async function getChatContext(convoId, currentPrompt) {
+  let messages = [];
+
+  // 1. Add System Prompt
+  messages.push({
+    role: "system",
+    content:
+      "You are a helpful assistant. Use the provided conversation history to maintain context.",
+  });
+
+  // 2. Fetch and add history if it exists
+  if (convoId) {
+    try {
+      const res = await fetch(
+        `http://localhost:8888/api/messages/conversation/${convoId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const historyData = await res.json();
+      historyData.forEach((m) => {
+        messages.push({
+          role: m.sender === "user" ? "user" : "assistant",
+          content: m.messageText,
+        });
+      });
+    } catch (e) {
+      console.error("History fetch failed", e);
+    }
+  }
+
+  // 3. Add current user prompt
+  messages.push({ role: "user", content: currentPrompt });
+  return messages;
+}
+
+// 2. Add this Classifier Helper function
+function getModelFromPrompt(prompt) {
+  const text = prompt.toLowerCase();
+
+  // Logic/Keyword based routing
+  if (text.match(/code|program|java|python|javascript|rust|debug|api|function/))
+    return modelMapping.coding;
+  if (text.match(/math|calculate|logic|solve|equation|integral|theorem/))
+    return modelMapping.math;
+  if (text.match(/research|paper|study|analyze|summary|citation|article/))
+    return modelMapping.research;
+  if (text.match(/translate|language|english|hindi|spanish|french|translate/))
+    return modelMapping.translation;
+  if (text.match(/offline|local|private/)) return modelMapping.offline;
+
+  return modelMapping.default;
+}
+
+// ... (existing variable declarations)
+
+// 3. Update askOllamaWithTitle to accept and use a dynamic model
+async function askOllamaWithTitle(userMsg, modelName = modelMapping.default) {
+  const res = await fetch("http://localhost:11434/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: modelName, // Dynamic model selection
+      messages: [
+        {
+          role: "system",
+          content:
+            'You are an AI that: 1. Answers the user. 2. Generates a short conversation title (2–4 words). Return ONLY valid JSON: {"title":"...","reply":"..."}',
+        },
+        { role: "user", content: userMsg },
+      ],
+      stream: false,
+    }),
+  });
+  const data = await res.json();
+  const raw = data.message.content;
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  return JSON.parse(raw.substring(start, end + 1));
+}
+
+// 4. Update askOllamaSimpleReply to use a dynamic model
+async function askOllamaSimpleReply(userMsg, modelName = modelMapping.default) {
+  const res = await fetch("http://localhost:11434/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: modelName, // Dynamic model selection
+      messages: messages,
+      stream: false,
+    }),
+  });
+  const data = await res.json();
+  return data.message.content;
+}
+
+// 5. Update the Unified Send Logic to detect the category
+async function sendMessage() {
+  const userPrompt = chatInput.value.trim();
+  if (!userPrompt && !attachedFileContent) return;
+
+  // Determine the model based on user input
+  const selectedModel = getModelFromPrompt(userPrompt || attachedFileName);
+
+  const tempFileName = attachedFileName;
+  const tempFileContent = attachedFileContent;
+
+  if (tempFileName) appendFileChipUI(tempFileName);
+  if (userPrompt) appendMsg("user", userPrompt);
+
+  chatInput.value = "";
+  removeAttachedFile();
+
+  // Visual feedback of which model is working
+  appendMsg("ai", `Thinking using ${selectedModel}...`);
+
+  let fullPrompt = userPrompt;
+  if (tempFileContent) {
+    fullPrompt = `[Attached File: ${tempFileName}]\nContent:\n${tempFileContent}\n\nUser Instruction: ${
+      userPrompt || "Please analyze this file."
+    }`;
+  }
+
+  try {
+    let currentId = getConversationId();
+    let aiReply = "";
+
+    if (!currentId) {
+      const aiData = await askOllamaWithTitle(fullPrompt, selectedModel);
+      aiReply = aiData.reply;
+      const convo = await createConversation(aiData.title);
+      currentId = convo.conversationId;
+
+      const dbUserText = tempFileName
+        ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}`
+        : userPrompt;
+      await saveMessageToDb(currentId, "user", dbUserText);
+      await saveMessageToDb(currentId, "ai", aiReply);
+      window.location.href = `/chat?conversationId=${currentId}`;
+    } else {
+      // 1. Fetch history from DB + include current prompt
+      const messagesWithHistory = await getChatContext(currentId, fullPrompt);
+
+      // 2. Pass history to AI
+      aiReply = await askOllamaSimpleReply(messagesWithHistory, selectedModel);
+
+      const dbUserText = tempFileName
+        ? `📎 Attached: ${tempFileName}${userPrompt ? " - " + userPrompt : ""}`
+        : userPrompt;
+      await saveMessageToDb(currentId, "user", dbUserText);
+      await saveMessageToDb(currentId, "ai", aiReply);
+
+      loadConversations();
+      loadMessages();
+    }
+  } catch (e) {
+    console.error("SendMessage Error:", e);
+    appendMsg("ai", `⚠️ Error: ${e.message}`);
+  }
+}
+
+// ... (rest of your existing loadConversations, loadMessages, and event listeners)
 
 // Global variables for staged file upload
 let attachedFileContent = "";
@@ -80,13 +243,16 @@ async function routeModel(userMsg) {
   }
 }
 
-async function askOllamaSimpleReply(userMsg, modelName) {
+async function askOllamaSimpleReply(
+  messagesArray,
+  modelName = modelMapping.default
+) {
   const res = await fetch("http://localhost:11434/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: modelName, // DYNAMIC MODEL NAME
-      messages: [{ role: "user", content: userMsg }],
+      model: modelName,
+      messages: messagesArray, // Pass the history array
       stream: false,
     }),
   });
@@ -225,42 +391,43 @@ async function readExcel(file) {
 }
 
 // ---------- API Services ----------
-async function askOllamaWithTitle(userMsg) {
+async function askOllamaWithTitle(userMsg, modelName = modelMapping.default) {
   const res = await fetch("http://localhost:11434/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "gemma3:1b",
+      model: modelName,
       messages: [
         {
           role: "system",
           content:
-            'You are an AI that: 1. Answers the user. 2. Generates a short conversation title (2–4 words). Return ONLY valid JSON: {"title":"...","reply":"..."}',
+            'You are an AI that generates a short conversation title. Return ONLY valid JSON: {"title":"...","reply":"..."}. Do not use markdown blocks.',
         },
         { role: "user", content: userMsg },
       ],
       stream: false,
     }),
   });
-  const data = await res.json();
-  const raw = data.message.content;
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  return JSON.parse(raw.substring(start, end + 1));
-}
 
-async function askOllamaSimpleReply(userMsg) {
-  const res = await fetch("http://localhost:11434/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "gemma3:1b",
-      messages: [{ role: "user", content: userMsg }],
-      stream: false,
-    }),
-  });
   const data = await res.json();
-  return data.message.content;
+  let raw = data.message.content;
+
+  // FIX: Remove Markdown code blocks if the AI included them
+  raw = raw
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  try {
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start === -1 || end === -1) throw new Error("Invalid JSON structure");
+    return JSON.parse(raw.substring(start, end + 1));
+  } catch (err) {
+    console.error("JSON Parse Error. Raw content:", raw);
+    // Fallback if parsing fails
+    return { title: "New Conversation", reply: raw };
+  }
 }
 
 async function saveMessageToDb(convoId, sender, text) {
@@ -291,45 +458,6 @@ async function createConversation(title) {
     }
   );
   return await res.json();
-}
-
-// ---------- Unified Send Logic ----------
-async function sendMessage() {
-  const userPrompt = chatInput.value.trim();
-  if (!userPrompt && !attachedFileContent) return;
-
-  // ... (Keep your UI state management and File Chip logic) ...
-
-  appendMsg("ai", "Selecting best model..."); // Feedback for routing
-
-  let fullPrompt = userPrompt;
-  if (tempFileContent) {
-    fullPrompt = `[Attached File: ${tempFileName}]\nContent:\n${tempFileContent}\n\nUser Instruction: ${
-      userPrompt || "Please analyze this file."
-    }`;
-  }
-
-  try {
-    // DYNAMIC ROUTING STEP
-    const selectedModel = await routeModel(fullPrompt);
-    console.log(`Routing to: ${selectedModel}`);
-
-    let currentId = getConversationId();
-    let aiReply = "";
-
-    // Update your request to use 'selectedModel' instead of hardcoded strings
-    if (!currentId) {
-      // Use the router model to get title, then final model for reply
-      const aiData = await askOllamaWithTitle(fullPrompt, selectedModel);
-      aiReply = aiData.reply;
-      // ... (Rest of conversation creation logic) ...
-    } else {
-      aiReply = await askOllamaSimpleReply(fullPrompt, selectedModel);
-      // ... (Rest of message saving logic) ...
-    }
-  } catch (e) {
-    appendMsg("ai", "⚠️ Failed to process message.");
-  }
 }
 
 // ---------- Initial Load ----------
