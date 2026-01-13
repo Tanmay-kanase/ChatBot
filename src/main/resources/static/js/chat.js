@@ -4,6 +4,18 @@ const sendBtn = document.getElementById("send-btn");
 const scrollWindow = document.getElementById("scroll-window");
 const convoList = document.getElementById("conversation-list");
 const usernameLabel = document.getElementById("username-label");
+const labelusername = document.getElementById("label-username");
+
+document.getElementById("profile-btn").onclick = () => {
+  document.getElementById("profile-menu").classList.toggle("hidden");
+};
+
+document.getElementById("logout-btn").onclick = () => {
+  localStorage.clear();
+  window.location.href = "/";
+};
+
+
 
 // Global variables for staged file upload
 let attachedFileContent = "";
@@ -18,6 +30,7 @@ const token = localStorage.getItem("token");
 
 if (user && user.username) {
   usernameLabel.innerText = user.username;
+  labelusername.innerText = user.username;
 }
 
 // ---------- Conversation ID ----------

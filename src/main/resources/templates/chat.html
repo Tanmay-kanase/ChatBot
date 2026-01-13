@@ -45,12 +45,18 @@
   </div>
 
   <div class="p-4 border-t border-base">
-    <div class="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-lg cursor-pointer transition">
-      <div class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
-        U
+      <div class="relative">
+          <div id="profile-btn" class="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-lg cursor-pointer transition">
+              <div class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">JD</div>
+              <span class="text-sm font-bold truncate" id="username-label">username</span>
+          </div>
+
+          <div id="profile-menu" class="hidden absolute left-0 bottom-12 w-36 bg-white shadow-md border rounded-lg">
+              <p class="px-3 py-2 text-sm font-medium text-gray-700" id="label-username">username</p>
+              <button id="logout-btn" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
+          </div>
       </div>
-      <span class="text-sm font-bold truncate" id="username-label">username</span>
-    </div>
+
   </div>
 </aside>
 
