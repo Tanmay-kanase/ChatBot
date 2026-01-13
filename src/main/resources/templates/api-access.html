@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot AI – API Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-black text-white font-sans h-screen overflow-hidden">
+
+<div class="h-screen grid grid-rows-[auto_1fr_auto] px-4 py-2">
+
+    <!-- HEADER -->
+    <header class="text-center">
+        <h1 class="text-2xl md:text-3xl font-bold">ChatBot AI API</h1>
+        <p class="text-gray-400 text-sm">
+            AI chatbot API for web & mobile applications
+        </p>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="grid md:grid-cols-2 gap-4 items-center">
+
+        <!-- PRICING -->
+        <section class="border border-white rounded-lg p-4">
+            <h2 class="text-lg font-semibold mb-2">Pricing</h2>
+
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span>Free</span>
+                    <span>₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Pro</span>
+                    <span>₹999 / month</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Enterprise</span>
+                    <span>Custom</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-gray-400 mt-2">
+                API-key based · JSON · Secure
+            </p>
+        </section>
+
+        <!-- API USAGE -->
+        <section class="border border-white rounded-lg p-4 text-sm">
+            <h2 class="text-lg font-semibold mb-2">API Usage</h2>
+
+            <pre class="bg-gray-900 p-2 rounded text-xs overflow-x-auto">
+POST /api/chat
+Headers:
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "message": "Hello AI"
+}
+            </pre>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-gray-500 text-xs">
+        © 2026 ChatBot AI
+    </footer>
+
+</div>
+
+</body>
+</html>

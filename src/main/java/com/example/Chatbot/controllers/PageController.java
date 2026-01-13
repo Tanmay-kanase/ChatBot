@@ -36,4 +36,8 @@ public class PageController {
     public String homePage() {
         return "home";
     }
+
+    @GetMapping("/api-access")
+    public String apiAccess() {return "api-access";}
+
 }
