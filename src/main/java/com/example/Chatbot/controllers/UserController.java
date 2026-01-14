@@ -30,8 +30,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> body) {
-        return userService.login(body.get("email"), body.get("password"));
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+        Map<String, Object> result = userService.login(body.get("email"), body.get("password"));
+
+        if (result.containsKey("error")) {
+            return ResponseEntity
+                    .status(401) // UNAUTHORIZED
+                    .body(result);
+        }
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/users")

@@ -282,11 +282,39 @@ function appendMsg(role, text) {
         ${text}
       </div>`;
   } else {
+    const formattedText = marked.parse(text);
+
     div.innerHTML = `
       <div class="w-8 h-8 bg-black rounded-sm flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">S</div>
-      <div class="flex-1 space-y-4">
-        <p class="text-sm leading-relaxed text-gray-800">${text}</p>
+      <div class="flex-1 space-y-2 markdown-container">
+        <div class="text-sm leading-relaxed text-gray-800">
+          ${formattedText}
+        </div>
       </div>`;
+
+    // 1. Highlight Code
+    setTimeout(() => {
+      Prism.highlightAllUnder(div);
+
+      // 2. Add Copy Buttons to each <pre> block
+      div.querySelectorAll("pre").forEach((block) => {
+        if (block.parentElement.classList.contains("relative")) return;
+
+        block.parentElement.classList.add("relative", "group");
+        const button = document.createElement("button");
+        button.innerText = "Copy";
+        button.className =
+          "absolute top-2 right-2 px-2 py-1 text-[10px] bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-600";
+
+        button.onclick = () => {
+          navigator.clipboard.writeText(block.innerText);
+          button.innerText = "Copied!";
+          setTimeout(() => (button.innerText = "Copy"), 2000);
+        };
+
+        block.parentElement.appendChild(button);
+      });
+    }, 0);
   }
 
   chatContent.appendChild(div);
