@@ -23,59 +23,48 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     public Map<String, Object> signup(user user) {
-
         Map<String, Object> res = new HashMap<>();
 
-        try {
-            if (userRepository.existsByEmail(user.getEmail())) {
-                res.put("error", "Email already exists");
-                return res;
-            }
-
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user saved = userRepository.save(user);
-
-            String token = jwtUtil.generateToken(saved.getEmail());
-
-
-            res.put("user", saved);
-            res.put("token", token);
-            return res;
-
-        } catch (Exception e) {
-            res.put("error", "Signup failed");
+        if (userRepository.existsByEmail(user.getEmail())) {
+            res.put("error", "Email already exists");
             return res;
         }
+
+        if (userRepository.existsByUsername(user.getUsername())) {
+            res.put("error", "Username already exists");
+            return res;
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user saved = userRepository.save(user);
+
+        String token = jwtUtil.generateToken(saved.getEmail());
+
+        res.put("user", saved);
+        res.put("token", token);
+        return res;
     }
 
     public Map<String, Object> login(String email, String password) {
-
         Map<String, Object> res = new HashMap<>();
 
-        try {
-            user u = userRepository.findByEmail(email).orElse(null);
+        user u = userRepository.findByEmail(email).orElse(null);
 
-            if (u == null) {
-                res.put("error", "Email not found");
-                return res;
-            }
-
-            if (!passwordEncoder.matches(password, u.getPassword())) {
-                res.put("error", "Wrong password");
-                return res;
-            }
-
-            String token = jwtUtil.generateToken(u.getEmail());
-
-
-            res.put("user", u);
-            res.put("token", token);
-            return res;
-
-        } catch (Exception e) {
-            res.put("error", "Login failed");
+        if (u == null) {
+            res.put("error", "Email not found");
             return res;
         }
+
+        if (!passwordEncoder.matches(password, u.getPassword())) {
+            res.put("error", "Wrong password");
+            return res;
+        }
+
+        String token = jwtUtil.generateToken(u.getEmail());
+
+        res.put("user", u);
+        res.put("token", token);
+        return res;
     }
 
     public List<user> getAll() {
