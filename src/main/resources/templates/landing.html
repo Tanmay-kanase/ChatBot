@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .dashboard-wrapper { display: flex; height: 90vh; width: 95vw; background: white; border-radius: 12px; overflow: hidden; }
+        .sidebar { width: 250px; background: #f3f4f6; padding: 20px; border-right: 1px solid #e5e7eb; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; }
+        .messages-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .input-area { padding: 20px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; }
+        .user-msg { align-self: flex-end; background: #000; color: white; padding: 10px; border-radius: 10px 10px 0 10px; }
+        .bot-msg { align-self: flex-start; background: #e5e7eb; padding: 10px; border-radius: 10px 10px 10px 0; }
+    </style>
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <div class="sidebar">
+        <h3>History</h3>
+        <p class="note">Your previous chats will appear here.</p>
+    </div>
+    <div class="chat-container">
+        <div class="messages-box" id="msgBox">
+            <div class="bot-msg">Hello! How can I help you today?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" style="flex: 1;" placeholder="Ask anything...">
+            <button onclick="sendMsg()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sendMsg() {
+        const input = document.getElementById('userInput');
+        const box = document.getElementById('msgBox');
+        if(!input.value) return;
+
+        box.innerHTML += `<div class="user-msg">${input.value}</div>`;
+        input.value = '';
+        box.scrollTop = box.scrollHeight;
+    }
+</script>
+</body>
+</html>

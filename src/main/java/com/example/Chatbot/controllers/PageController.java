@@ -1,7 +1,9 @@
 package com.example.Chatbot.controllers;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 // All the html files are load from the src/resources/templates you just have to mention the
 // controller
@@ -35,11 +37,13 @@ public class PageController {
         return "home";
     }
 
+//    @GetMapping("/profile")
+//    public String ProfilePage() {
+//        return "profile";
+//    }
 
-    @GetMapping("/profile")
-    public String ProfilePage() {
-        return "profile";
-    }
+    @GetMapping("/api-access")
+    public String apiAccess() {return "api-access";}
 
 
 }
