@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-black flex items-center justify-center min-h-screen text-white">
+
+<div class="bg-[#1f1f1f] w-96 rounded-2xl shadow-xl p-6">
+
+    <h2 class="text-xl font-semibold mb-6 text-center">Edit profile</h2>
+
+    <!-- Avatar -->
+    <div class="flex justify-center mb-6 relative">
+        <div id="avatarCircle"
+             class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center text-5xl font-bold border-2 border-gray-400">
+            P
+        </div>
+
+        <label for="avatarInput"
+               class="absolute bottom-2 right-28 bg-gray-900 p-2 rounded-full border border-gray-500 cursor-pointer text-white text-lg">
+            📷
+        </label>
+        <input type="file" id="avatarInput" class="hidden" accept="image/*">
+    </div>
+
+    <!-- Display Name -->
+    <div class="mb-4">
+        <label class="block text-gray-400 text-sm mb-1">Display name</label>
+        <input type="text" id="displayName"
+               class="w-full bg-[#2a2a2a] px-4 py-2 rounded-lg border border-gray-600 text-white">
+    </div>
+
+    <!-- Username -->
+    <div class="mb-4">
+        <label class="block text-gray-400 text-sm mb-1">Username</label>
+        <input type="text" id="username"
+               class="w-full bg-[#2a2a2a] px-4 py-2 rounded-lg border border-gray-600 text-white">
+    </div>
+
+    <!-- Email -->
+    <div class="mb-6">
+        <label class="block text-gray-400 text-sm mb-1">Email</label>
+        <input type="email" id="email"
+               class="w-full bg-[#2a2a2a] px-4 py-2 rounded-lg border border-gray-600 text-white">
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-between items-center mt-4">
+
+        <!-- Logout -->
+        <button id="logoutBtn"
+                class="px-4 py-2 bg-red-600 rounded-full hover:bg-red-500 font-semibold flex items-center gap-1">
+            🚪 Logout
+        </button>
+
+        <!-- Cancel + Save -->
+        <div class="flex gap-3">
+            <button id="cancelBtn"
+                    class="px-4 py-2 bg-gray-700 rounded-full hover:bg-gray-600">
+                Cancel
+            </button>
+
+            <button id="saveBtn"
+                    class="px-4 py-2 bg-white text-black rounded-full font-semibold hover:bg-gray-300">
+                Save
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let originalData = {};
+
+    async function loadProfile() {
+        const userData = localStorage.getItem("user");
+
+        if (!userData) {
+            alert("Please login first");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const user = JSON.parse(userData);
+
+        try {
+            const response = await fetch(`http://localhost:8888/api/users/users/${user.email}`);
+            if (!response.ok) throw new Error("User not found");
+
+            const data = await response.json();
+            originalData = { ...data };
+
+            document.getElementById("displayName").value = data.username;
+            document.getElementById("username").value = data.username;
+            document.getElementById("email").value = data.email;
+
+            const initials = data.username
+                .split(" ")
+                .map(n => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
+
+            document.getElementById("avatarCircle").innerText = initials;
+
+        } catch (error) {
+            console.error(error);
+            alert("Error loading profile");
+        }
+    }
+
+    // Save
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+        const updatedUser = {
+            username: document.getElementById("username").value,
+            email: document.getElementById("email").value
+        };
+
+        try {
+            const res = await fetch(`http://localhost:8888/api/users/users/${originalData.email}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedUser)
+            });
+
+            if (!res.ok) throw new Error("Update failed");
+
+            // Update localStorage also
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            alert("Profile updated successfully");
+            window.location.href = "profile.html";
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update profile");
+        }
+    });
+
+    // Cancel
+    document.getElementById("cancelBtn").addEventListener("click", () => {
+        document.getElementById("displayName").value = originalData.username;
+        document.getElementById("username").value = originalData.username;
+        document.getElementById("email").value = originalData.email;
+    });
+
+    // Image preview
+    document.getElementById("avatarInput").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            document.getElementById("avatarCircle").style.backgroundImage = `url(${event.target.result})`;
+            document.getElementById("avatarCircle").style.backgroundSize = "cover";
+            document.getElementById("avatarCircle").innerText = "";
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("user");
+        alert("Logged out successfully");
+        window.location.href = "login.html";
+    });
+
+    loadProfile();
+</script>
+
+</body>
+</html>

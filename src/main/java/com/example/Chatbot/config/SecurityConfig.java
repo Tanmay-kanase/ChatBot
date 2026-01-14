@@ -43,10 +43,10 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 // Public Pages
-                                                .requestMatchers("/home", "/about", "/contact")
+                                                .requestMatchers("/home", "/about", "/contact","/profile")
                                                 .permitAll()
 
-                                                // Auth & Public APIs
+                                                // Auth & Public API
                                                 .requestMatchers("/api/users/**").permitAll()
                                                 .requestMatchers("/chat/**").authenticated()
                                                 .requestMatchers("/api/conversations/**").permitAll()
