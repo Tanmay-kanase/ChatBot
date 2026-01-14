@@ -7,14 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   form.addEventListener("submit", async (e) => {
-    e.preventDefault(); // 🚨 this stops ?email=... redirect
+    e.preventDefault();
 
     const formData = new FormData(form);
 
-    const payload = {
-      email: formData.get("email") || formData.get("username"),
-      password: formData.get("password"),
-    };
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    const payload = { email, password };
 
     try {
       const response = await fetch("http://localhost:8888/api/users/login", {
@@ -25,16 +25,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        window.location.href = "/chat";
-      } else {
-        alert(data.error || "Invalid credentials");
+      // 🔥 BACKEND error handling for BOTH email + password
+      if (data.error) {
+        alert("❌ " + data.error);
+        return;
       }
+
+      // Success
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.href = "/chat";
+
     } catch (err) {
       console.error("Login fetch error:", err);
-      alert("Server error. Try again.");
+      alert("❌ Server error. Try again.");
     }
   });
 });
