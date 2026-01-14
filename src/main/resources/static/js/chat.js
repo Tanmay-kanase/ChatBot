@@ -286,7 +286,8 @@ function appendMsg(role, text) {
 
     div.innerHTML = `
       <div class="w-8 h-8 bg-black rounded-sm flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">S</div>
-      <div class="flex-1 space-y-2 markdown-container">
+      <div class="flex-1 space-y-2 markdown-container max-w-full overflow-hidden">
+
         <div class="text-sm leading-relaxed text-gray-800">
           ${formattedText}
         </div>
@@ -300,7 +301,9 @@ function appendMsg(role, text) {
       div.querySelectorAll("pre").forEach((block) => {
         if (block.parentElement.classList.contains("relative")) return;
 
-        block.parentElement.classList.add("relative", "group");
+        block.classList.add("relative", "group");
+        block.appendChild(button);
+
         const button = document.createElement("button");
         button.innerText = "Copy";
         button.className =

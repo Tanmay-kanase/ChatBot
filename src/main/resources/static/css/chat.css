@@ -148,3 +148,268 @@ body {
     transform: translateY(0);
   }
 }
+/* ===== ChatGPT-style Code Blocks ===== */
+.markdown-container pre {
+  background: #0f172a; /* dark slate */
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  overflow-x: auto;
+  white-space: pre-wrap;        /* ✅ wrap long lines */
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Remove extra margins */
+.markdown-container pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Inline code */
+.markdown-container code:not(pre code) {
+  background: #f1f5f9;
+  color: #111827;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Copy button positioning */
+.markdown-container pre {
+  position: relative;
+}
+
+/* Smooth scrollbar */
+.markdown-container pre::-webkit-scrollbar {
+  height: 6px;
+}
+.markdown-container pre::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 10px;
+}
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {/* ================================
+                 Base Layout & Scrollbars
+              ================================ */
+              body {
+                font-family: "Inter", sans-serif;
+                background-color: #ffffff;
+              }
+
+              .no-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+
+              .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+
+              /* ================================
+                 Markdown Container
+              ================================ */
+              .markdown-container {
+                max-width: 100%;
+                overflow-x: hidden;
+                line-height: 1.6;
+                word-wrap: break-word;
+              }
+
+              /* Paragraphs */
+              .markdown-container p {
+                margin-bottom: 0.75rem;
+              }
+
+              /* Lists */
+              .markdown-container ul {
+                list-style-type: disc;
+                margin-left: 1.5rem;
+                margin-bottom: 1rem;
+              }
+
+              .markdown-container ol {
+                list-style-type: decimal;
+                margin-left: 1.5rem;
+                margin-bottom: 1rem;
+              }
+
+              .markdown-container li {
+                margin-bottom: 0.25rem;
+              }
+
+              /* Headings */
+              .markdown-container h1,
+              .markdown-container h2,
+              .markdown-container h3 {
+                font-weight: 700;
+                margin-top: 1.25rem;
+                margin-bottom: 0.5rem;
+                color: #111827;
+              }
+
+              /* Blockquote */
+              .markdown-container blockquote {
+                border-left: 4px solid #e5e7eb;
+                padding-left: 1rem;
+                color: #4b5563;
+                font-style: italic;
+                margin: 1rem 0;
+              }
+
+              /* ================================
+                 FINAL ChatGPT-Style Code Blocks
+              ================================ */
+              .markdown-container pre {
+                background: #0f172a;
+                color: #e5e7eb;
+                border-radius: 12px;
+                padding: 16px;
+                margin: 12px 0;
+                max-width: 100%;
+                box-sizing: border-box;
+
+                white-space: pre-wrap;
+                word-break: break-word;
+                overflow-x: auto;
+                overflow-y: hidden;
+
+                font-size: 13px;
+                line-height: 1.6;
+                position: relative;
+              }
+
+              /* Code inside pre */
+              .markdown-container pre code {
+                background: transparent;
+                color: inherit;
+                padding: 0;
+                white-space: pre-wrap;
+                word-break: break-word;
+                font-family: Consolas, Monaco, "Courier New", monospace;
+              }
+
+              /* Inline code */
+              .markdown-container :not(pre) > code {
+                background: #f1f5f9;
+                color: #111827;
+                padding: 2px 6px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+              }
+
+              /* Scrollbar for code blocks */
+              .markdown-container pre::-webkit-scrollbar {
+                height: 6px;
+              }
+              .markdown-container pre::-webkit-scrollbar-thumb {
+                background: #475569;
+                border-radius: 10px;
+              }
+
+              /* ================================
+                 Prism Token Colors (Safe)
+              ================================ */
+              .token.comment,
+              .token.prolog,
+              .token.doctype,
+              .token.cdata {
+                color: #94a3b8;
+              }
+
+              .token.keyword {
+                color: #38bdf8;
+              }
+
+              .token.string {
+                color: #a7f3d0;
+              }
+
+              .token.function {
+                color: #fbbf24;
+              }
+
+              .token.number {
+                color: #fca5a5;
+              }
+
+              /* ================================
+                 Copy Button (Code Blocks)
+              ================================ */
+              .copy-btn {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.25rem 0.5rem;
+                background-color: #374151;
+                color: #ffffff;
+                font-size: 0.75rem;
+                border-radius: 0.375rem;
+                border: 1px solid #4b5563;
+                cursor: pointer;
+                opacity: 0.8;
+                transition: opacity 0.2s ease-in-out, background 0.2s;
+                z-index: 10;
+              }
+
+              .copy-btn:hover {
+                background-color: #4b5563;
+                opacity: 1;
+              }
+
+              /* ================================
+                 Input & UI Tweaks
+              ================================ */
+              #chat-input {
+                max-height: 200px;
+                transition: border-color 0.2s;
+              }
+
+              .input-container {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                            0 2px 4px -1px rgba(0, 0, 0, 0.03);
+              }
+
+              #conversation-list div {
+                transition: all 0.2s ease;
+              }
+
+              /* ================================
+                 Profile Menu Animation
+              ================================ */
+              #profile-menu {
+                animation: slideUp 0.2s ease-out;
+              }
+
+              @keyframes slideUp {
+                from {
+                  opacity: 0;
+                  transform: translateY(10px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(0);
+                }
+              }
+
+  color: #94a3b8;
+}
+
+.token.keyword {
+  color: #38bdf8;
+}
+
+.token.string {
+  color: #a7f3d0;
+}
+
+.token.function {
+  color: #fbbf24;
+}
