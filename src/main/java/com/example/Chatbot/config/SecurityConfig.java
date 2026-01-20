@@ -34,7 +34,7 @@ public class SecurityConfig {
                                 // 4. Request Authorization
                                 .authorizeHttpRequests(auth -> auth
                                                 // Public Assets & Static Resources
-                                                .requestMatchers("/", "/login", "/signup","/api-access",
+                                                .requestMatchers("/", "/login", "/signup", "/api-access",
                                                                 "/chat/**", "/css/**", "/js/**",
                                                                 "/**/*.png", "/**/*.jpg",
                                                                 "/**/*.jpeg", "/**/*.gif",
@@ -43,14 +43,14 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 // Public Pages
-                                                .requestMatchers("/home", "/about", "/contact","/profile")
+                                                .requestMatchers("/home", "/about", "/contact", "/profile")
                                                 .permitAll()
 
                                                 // Auth & Public API
                                                 .requestMatchers("/api/users/**").permitAll()
                                                 .requestMatchers("/chat/**").authenticated()
                                                 .requestMatchers("/api/conversations/**").permitAll()
-
+                                                .requestMatchers("/api/AI/**").permitAll()
                                                 // Secure all other endpoints
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(jwtAuthFilter,
